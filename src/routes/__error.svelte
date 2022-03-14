@@ -2,16 +2,16 @@
 	export function load({ error, status }) {
 		return {
 			props: {
-                error,
-                status
-            }
-		};
+				error,
+				status
+			}
+		}
 	}
 </script>
 
 <script>
-	import { dev } from '$app/env';
-	export let error, status;
+	import { dev } from '$app/env'
+	export let error, status
 </script>
 
 <svelte:head>

@@ -1,26 +1,27 @@
 <script lang="ts">
-    import { tick } from 'svelte'
-    import { LockIcon, GithubIcon } from 'svelte-feather-icons'
-    import { auth } from '$lib/supabase'
-    import { createQueryStore } from '$lib/utils/query'
-    import Seo from '$lib/components/SEO.svelte'
-	import { handleAlert } from '$lib/alert'
-    import Spinner from '$lib/components/Spinner.svelte'
+  import {tick} from 'svelte'
+  import {GithubIcon, LockIcon} from 'svelte-feather-icons'
+  import {auth} from '$lib/supabase'
+  import {createQueryStore} from '$lib/utils/query'
+  import Seo from '$lib/components/SEO.svelte'
+  import {handleAlert} from '$lib/alert'
+  import Spinner from '$lib/components/Spinner.svelte'
 
-    const regQuery = createQueryStore('reg')
+  const regQuery = createQueryStore('reg')
 
-    let isSignIn: boolean = $regQuery ? false : true
-    function toggleView() {
-        isSignIn = !isSignIn
-        tick()
-        if(isSignIn) {
-            regQuery.unset()
-        } else {
+  let isSignIn: boolean = $regQuery ? false : true
+
+  function toggleView() {
+    isSignIn = !isSignIn
+    tick()
+    if (isSignIn) {
+      regQuery.unset()
+    } else {
             regQuery.set(true)
         }
     }
 
-    // validation, message and loading state
+  // validation, message and loading state
     let loading = false
     // form fields
     let email = '', password = ''
@@ -53,13 +54,15 @@
     }
 
     async function handleProviderSignIn(provider) {
-        loading = true
-        const { error } = await auth.signIn({ provider })
-        if (error) handleAlert({ type: "error", text: error.message})
-        loading = false
+      loading = true
+      const {error} = await auth.signIn({provider}, {
+        redirectTo: (process.env.NODE_ENV === 'development') ? 'http://localhost:3000' : undefined
+      })
+      if (error) handleAlert({type: "error", text: error.message})
+      loading = false
     }
 
-    $: isSignIn =  $regQuery ? false : true
+    $: isSignIn =  !$regQuery
 </script>
 
 <Seo title={`Auth - ${isSignIn ? 'Log In' : 'Sign Up'}`} />
@@ -77,18 +80,20 @@
 </div>
 <!-- Sign Up form -->
 <form class="w-full sm:w-1/2 xl:w-5/12" method="post" on:submit|preventDefault={signUpOrSignIn} >
-    <div class="border-teal p-8 border-t-12 bg-white mb-6 rounded-lg shadow-lg" style="background: url(/undraw_access_denied_re_awnf.svg) no-repeat rgba(76, 175, 80, 0.1)">
-    <button type="button" class="flex-1 bg-gray-200 text-green-700 py-3 rounded w-full text-center shadow" on:click|preventDefault={() => handleProviderSignIn('github')}>
-        <GithubIcon size="1x" class="inline-block "/> {isSignIn ? 'Log In' : 'Sign Up' } with <strong>Github</strong>
+  <div class="border-teal p-8 border-t-12 bg-white mb-6 rounded-lg shadow-lg"
+       style="background: url(/undraw_access_denied_re_awnf.svg) no-repeat rgba(76, 175, 80, 0.1)">
+    <button type="button" class="flex-1 bg-gray-200 text-green-700 py-3 rounded w-full text-center shadow"
+            on:click|preventDefault={() => handleProviderSignIn('google')}>
+      <GithubIcon size="1x" class="inline-block "/> {isSignIn ? 'Log In' : 'Sign Up' } with <strong>Github</strong>
     </button>
     <hr class="my-4"/>
     <div class="mb-4">
-        <label for="email" class="block font-semibold text-gray-800 mb-2 text-left">Email</label>
-        <input
-        id="email"
-        name="email"
-        type="email"
-        class="h-12 px-4 py-2 bg-white rounded shadow-inner border-gray-300 w-full border  hover:border-gray-400"
+      <label for="email" class="block font-semibold text-gray-800 mb-2 text-left">Email</label>
+      <input
+          id="email"
+          name="email"
+          type="email"
+          class="h-12 px-4 py-2 bg-white rounded shadow-inner border-gray-300 w-full border  hover:border-gray-400"
         placeholder="Your Email"
         required
         bind:value={email}
